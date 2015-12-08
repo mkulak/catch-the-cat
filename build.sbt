@@ -4,7 +4,7 @@ enablePlugins(ScalaJSPlugin)
 
 workbenchSettings
 
-name := "Example"
+name := "CatGame"
 
 version := "0.1-SNAPSHOT"
 
