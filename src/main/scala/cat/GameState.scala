@@ -10,9 +10,11 @@ case class Point(x:Int, y:Int) {
   def distance(p:Point): Double = {
     Math.sqrt((x - p.x) * (x - p.x) + (y - p.y) * (y - p.y))
   }
+
+  def +(p:Point) = new Point(x + p.x, y + p.y)
 }
 
-class Cell(val hexCoords:Point, var neighbors:List[Point], var terminal:Boolean)
+class Cell(val hexCoords:Point, var neighbors:Array[Point], var terminal:Boolean)
 
 case class GameState(cells:Map[Point, Cell], closedCells: Set[Point], cat: Point) {
   def isOpen(p:Point) = !closedCells.contains(p)

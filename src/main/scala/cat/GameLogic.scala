@@ -1,10 +1,16 @@
 package cat
 
 
+import java.util
+import java.util.Collections
+
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.util.Random
 
 class GameLogic(horizontals:Int, verticals:Int) {
+  val rand = new Random()
+
   def makeTurn(state:GameState, po:Option[Point]):GameState = {
     val valid: Boolean = po.exists(p => state.isOpen(p) && p != state.cat)
     if (valid) {
@@ -24,7 +30,7 @@ class GameLogic(horizontals:Int, verticals:Int) {
   def findNextCatPos(state:GameState):Option[Point] = {
     val queue = mutable.Queue.empty[(Point, Point)]
     val seen = mutable.Set.empty[Point]
-    queue ++= state.cells(state.cat).neighbors.filter(state.isOpen).map(p => (p, p))
+    queue ++= rand.shuffle(state.cells(state.cat).neighbors.filter(state.isOpen).map(p => (p, p)))
     while(queue.nonEmpty) {
       val (cur, start) = queue.dequeue()
       if (!seen(cur)) {
@@ -47,22 +53,15 @@ class GameLogic(horizontals:Int, verticals:Int) {
              verticals / 2 - y / 2 - (if (y % 2 == 0) 0 else 1) + (if (y < 0 && -y % 2 == 1) 1 else 0)
       ) {
         val point: Point = new Point(x, y)
-        cells += (point -> new Cell(point, List(), false))
+        cells += (point -> new Cell(point, null, false))
       }
     }
-    val neighbors = Array((1, 0), (-1, 0), (0, 1), (0, -1), (1, -1), (-1, 1))
-    //    cells.values.foreach()
-    for (cell <- cells.values) {
-      var nbrsList = new ListBuffer[Point]
-      for (neighbor <- neighbors) {
-        val neighborPoint = new Point(cell.hexCoords.x + neighbor._1, cell.hexCoords.y + neighbor._2)
-        if (cells.contains(neighborPoint)) {
-          nbrsList += neighborPoint
-        }
-      }
-      cell.neighbors = nbrsList.toList
-      cell.terminal = nbrsList.size < 6
-    }
-    new GameState(cells.toMap, Set.empty[Point], new Point(0, 0))
+    val neighbors = Array((1, 0), (-1, 0), (0, 1), (0, -1), (1, -1), (-1, 1)).map(p => new Point(p._1, p._2))
+    cells.values.foreach(c => {
+      c.neighbors = neighbors.map(n => c.hexCoords + n).filter(cells.contains)
+      c.terminal = c.neighbors.length < 6
+    })
+    val closed = rand.shuffle(cells.keys).toArray.take(rand.nextInt(6) + 4).toSet
+    new GameState(cells.toMap, closed, new Point(0, 0))
   }
 }

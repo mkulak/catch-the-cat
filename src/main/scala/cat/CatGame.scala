@@ -1,15 +1,12 @@
-package example
+package cat
 
-import cat._
-import org.scalajs.dom.raw.ClientRect
-
-import scala.scalajs.js
-import scala.scalajs.js.annotation.JSExport
 import org.scalajs.dom
 import org.scalajs.dom.{CanvasRenderingContext2D, html}
 
+import scala.scalajs.js.annotation.JSExport
+
 @JSExport
-object ScalaJSExample {
+object CatGame {
   @JSExport
   def main(canvas: html.Canvas): Unit = {
     val ctx: CanvasRenderingContext2D = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
