@@ -27,11 +27,18 @@ object CatGame {
       state = newState
     })
 
+    canvas.addEventListener("mousemove", (e: dom.MouseEvent) => {
+      val p = convertCoords(e)
+      val hex = view.findHexAt(state, p)
+      val newState = state.copy(selectedCell = hex)
+      view.render(newState)
+      state = newState
+    })
+
     def convertCoords(e: dom.MouseEvent):Point = {
       val x: Int = e.clientX.toInt - canvas.clientLeft - rect.left.toInt
       val y: Int = e.clientY.toInt - canvas.clientTop - rect.top.toInt
       new Point(x, y)
     }
-
   }
 }

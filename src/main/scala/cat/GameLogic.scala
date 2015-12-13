@@ -45,11 +45,13 @@ class GameLogic(horizontals:Int, verticals:Int) {
   }
 
   def newGame():GameState = {
-    val cells = (0 to horizontals).flatMap(h => {
-      val y = h - horizontals / 2
-      val start: Int = -verticals / 2 - y / 2 + (if (y < 0 && -y % 2 == 1) 1 else 0)
-      val end = verticals / 2 - y / 2 - (if (y % 2 == 0) 0 else 1) + (if (y < 0 && -y % 2 == 1) 1 else 0)
-      (start to end).map(x => new Cell(new Point(x, y), null, false)).map(c => c.hexCoords -> c)
+    val cells = (0 until verticals).flatMap(y => {
+      val h = horizontals - (y % 2)
+      (0 until h).map(j => {
+        val x = j - y / 2
+//        val terminal = y == 0 || y == verticals - 1 || j == 0 || j == horizontals - 1
+        new Cell(new Point(x, y), null, false)
+      }).map(c => c.hexCoords -> c)
     }).toMap
     val neighbors = Array((1, 0), (-1, 0), (0, 1), (0, -1), (1, -1), (-1, 1)).map(p => new Point(p._1, p._2))
     cells.values.foreach(c => {
@@ -57,6 +59,6 @@ class GameLogic(horizontals:Int, verticals:Int) {
       c.terminal = c.neighbors.length < 6
     })
     val closed = rand.shuffle(cells.keys).toArray.take(rand.nextInt(6) + 4).toSet
-    new GameState(cells, closed, new Point(0, 0))
+    new GameState(cells, closed, new Point(horizontals / 2 - verticals / 4, verticals / 2), None)
   }
 }

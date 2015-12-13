@@ -6,32 +6,45 @@ import org.scalajs.dom
 
 class GameView(val ctx:dom.CanvasRenderingContext2D, val width:Int, val height:Int) {
   val CELL_RADIUS = 21
-  val CELL_DISTANCE = 2
-  val CENTERS_DISTANCE = 2 * CELL_RADIUS  + CELL_DISTANCE
+
+  val R = 24
+  val H = (Math.sqrt(3) * R / 2).toInt
+  val V = 3 * R / 2
+//  val PADDING = R + 5
+
+
   ctx.lineWidth = 1
 
   def maxHexSize:(Int, Int) = {
-    val horizontals = (width / (CENTERS_DISTANCE * Math.sin(Math.PI / 3))).toInt - 1
-    val verticals = height / CENTERS_DISTANCE
+    val horizontals = width / (H * 2)
+    val verticals = height / V - 1
     (horizontals, verticals)
   }
   
-  def findHexAt(state: GameState, p:Point) = state.cells.keys.find(c => cellToView(c).distance(p) < CELL_RADIUS)
+  def findHexAt(state: GameState, p:Point) = state.cells.get(screenToHex(p)).map(_.hexCoords)
 
-  def cellToView(cell: Point) = new Point(
-    width / 2 + (cell.x.toDouble * CENTERS_DISTANCE.toDouble + cell.y * CENTERS_DISTANCE * Math.cos(Math.PI / 3)).toInt,
-    height / 2 - (cell.y.toDouble * CENTERS_DISTANCE.toDouble * Math.sin(Math.PI / 3)).toInt
+  def screenToHex(p: Point) = {
+    val yh = round((p.y - V).toDouble / V)
+    val xh = round((p.x - yh * H - H).toDouble / (H * 2))
+    new Point(xh, yh)
+  }
+
+  def hexToScreen(p: Point) = new Point(
+    p.x * H * 2 + p.y * H + H,
+    p.y * V + V
   )
+
+  def round(d:Double):Int = math.round(d).toInt
 
   def render(state: GameState) {
     fillRect(0, 0, width, height)
     setColor(0xffffff)
-    state.cells.values.foreach(cell => drawCell(cell, state.isOpen(cell.hexCoords)))
+    state.cells.values.foreach(cell => drawCell(cell, state.isOpen(cell.hexCoords), state.isSelected(cell.hexCoords)))
     drawCat(state.cat)
   }
 
-  def drawCell(cell: Cell, open:Boolean) {
-    val p = cellToView(cell.hexCoords)
+  def drawCell(cell: Cell, open:Boolean, selected:Boolean) {
+    val p = hexToScreen(cell.hexCoords)
     val x = new Array[Int](6)
     val y = new Array[Int](6)
     for (i <- 0 until 6) {
@@ -42,13 +55,16 @@ class GameView(val ctx:dom.CanvasRenderingContext2D, val width:Int, val height:I
     if (!open) {
       setColor(0xbbbbbb)
       drawHex(x, y, fill=true)
+    } else if (selected) {
+      setColor(0xA1D490)
+      drawHex(x, y, fill=true)
     }
     setColor(0x555555)
     drawHex(x, y, fill=false)
   }
 
   def drawCat(cat: Point) {
-    val p: Point = cellToView(cat)
+    val p: Point = hexToScreen(cat)
 
     val width = (2.0 * CELL_RADIUS * Math.cos(Math.PI / 6)).toInt
     val height = 2 * CELL_RADIUS

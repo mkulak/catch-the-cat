@@ -16,7 +16,8 @@ case class Point(x:Int, y:Int) {
 
 class Cell(val hexCoords:Point, var neighbors:Array[Point], var terminal:Boolean)
 
-case class GameState(cells:Map[Point, Cell], closedCells: Set[Point], cat: Point) {
+case class GameState(cells:Map[Point, Cell], closedCells: Set[Point], cat: Point, selectedCell: Option[Point]) {
   def isOpen(p:Point) = !closedCells.contains(p)
+  def isSelected(p:Point) = selectedCell.isDefined && p == selectedCell.get && p != cat
 }
 
