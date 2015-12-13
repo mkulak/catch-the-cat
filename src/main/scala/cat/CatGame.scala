@@ -20,20 +20,18 @@ object CatGame {
     view.render(state)
 
     canvas.addEventListener("click", (e: dom.MouseEvent) => {
-      val p = convertCoords(e)
-      val hex = view.findHexAt(state, p)
-      val newState = logic.makeTurn(state, hex)
+      val newState = logic.makeTurn(state, findCellPosAt(e))
       view.render(newState)
       state = newState
     })
 
     canvas.addEventListener("mousemove", (e: dom.MouseEvent) => {
-      val p = convertCoords(e)
-      val hex = view.findHexAt(state, p)
-      val newState = state.copy(selectedCell = hex)
+      val newState = state.copy(selectedCell = findCellPosAt(e))
       view.render(newState)
       state = newState
     })
+
+    def findCellPosAt(e: dom.MouseEvent) = state.cells.get(view.screenToHex(convertCoords(e))).map(_.hexCoords)
 
     def convertCoords(e: dom.MouseEvent):Point = {
       val x: Int = e.clientX.toInt - canvas.clientLeft - rect.left.toInt

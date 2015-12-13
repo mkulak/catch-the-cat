@@ -1,18 +1,17 @@
 package cat
 
 
-import java.util
-import java.util.Collections
-
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 class GameLogic(horizontals:Int, verticals:Int) {
+  val CLOSED_MIN = 4
+  val CLOSED_MAX = 10
   val rand = new Random()
+  val neighbors = Array((1, 0), (-1, 0), (0, 1), (0, -1), (1, -1), (-1, 1)).map(p => new Point(p._1, p._2))
 
   def makeTurn(state:GameState, po:Option[Point]):GameState = {
-    val valid: Boolean = po.exists(p => state.isOpen(p) && p != state.cat)
+    val valid = po.exists(p => state.isOpen(p) && p != state.cat)
     if (valid) {
       val newState = state.copy(closedCells = state.closedCells + po.get)
       moveCat(newState)
@@ -46,19 +45,16 @@ class GameLogic(horizontals:Int, verticals:Int) {
 
   def newGame():GameState = {
     val cells = (0 until verticals).flatMap(y => {
-      val h = horizontals - (y % 2)
-      (0 until h).map(j => {
-        val x = j - y / 2
-//        val terminal = y == 0 || y == verticals - 1 || j == 0 || j == horizontals - 1
-        new Cell(new Point(x, y), null, false)
-      }).map(c => c.hexCoords -> c)
+      (0 until horizontals - (y % 2)).map(x => {
+        val p = new Point(x - y / 2, y)
+        (p, new Cell(p, null, false))
+      })
     }).toMap
-    val neighbors = Array((1, 0), (-1, 0), (0, 1), (0, -1), (1, -1), (-1, 1)).map(p => new Point(p._1, p._2))
     cells.values.foreach(c => {
       c.neighbors = neighbors.map(n => c.hexCoords + n).filter(cells.contains)
       c.terminal = c.neighbors.length < 6
     })
-    val closed = rand.shuffle(cells.keys).toArray.take(rand.nextInt(6) + 4).toSet
+    val closed = rand.shuffle(cells.keys).toArray.take(rand.nextInt(CLOSED_MAX - CLOSED_MIN) + CLOSED_MIN).toSet
     new GameState(cells, closed, new Point(horizontals / 2 - verticals / 4, verticals / 2), None)
   }
 }
